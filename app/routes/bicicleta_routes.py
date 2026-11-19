@@ -52,3 +52,17 @@ def actualizar_bicicleta(
     db: Session = Depends(get_db),
 ):
     return bicicleta_service.update_bicicleta(db, idBicicleta, data)
+
+
+@router.patch(
+    "/{idBicicleta}/estado",
+    response_model=BicicletaResponse,
+    response_model_by_alias=True,
+)
+def cambiar_estado_bicicleta(
+    idBicicleta: int,
+    data: BicicletaEstadoUpdate,
+    db: Session = Depends(get_db),
+):
+    """Activar/desactivar (RN-008). Auth admin se aplica en Fase 7."""
+    return bicicleta_service.update_estado_bicicleta(db, idBicicleta, data)
