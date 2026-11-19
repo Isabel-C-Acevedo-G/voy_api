@@ -12,6 +12,10 @@ wheels/
 # Secrets and local env
 .env
 
+# SQLite local
+*.db
+*.db-journal
+
 # Uploads (keep folder, ignore files)
 uploads/*
 !uploads/.gitkeep
