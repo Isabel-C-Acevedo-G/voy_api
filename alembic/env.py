@@ -10,7 +10,13 @@ from alembic import context
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from app.database.connection import DATABASE_URL, Base  # noqa: E402
-from app.models import bicicleta_model, espacio_model, rol_model, usuario_model  # noqa: E402, F401
+from app.models import (  # noqa: E402, F401
+    bicicleta_model,
+    espacio_model,
+    ingreso_model,
+    rol_model,
+    usuario_model,
+)
 
 config = context.config
 
