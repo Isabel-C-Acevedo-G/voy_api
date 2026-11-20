@@ -5,7 +5,9 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 from sqlalchemy.orm import Session
 
+from app.dependencies.auth_dependency import require_admin
 from app.dependencies.database_dependency import get_db
+from app.models.usuario_model import Usuario
 from app.schemas.reporte_schema import FormatoReporte, TipoReporte
 from app.services import reporte_service
 
@@ -19,6 +21,7 @@ def generar_reporte(
     fechaHasta: date = Query(...),
     formato: FormatoReporte = Query(FormatoReporte.json),
     db: Session = Depends(get_db),
+    _: Usuario = Depends(require_admin),
 ):
     if fechaDesde > fechaHasta:
         return JSONResponse(

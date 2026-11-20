@@ -62,6 +62,7 @@ def create_usuario(db: Session, data: UsuarioCreate) -> Usuario:
         documento=data.documento,
         correo=str(data.correo),
         telefono=data.telefono,
+        clave_hash="",  # sin login; usar POST /auth/register
         id_rol=data.id_rol,
         estado=data.estado.value,
         acepta_tratamiento_datos=data.acepta_tratamiento_datos,
