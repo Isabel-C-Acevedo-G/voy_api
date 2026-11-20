@@ -14,6 +14,7 @@ from app.models import (  # noqa: E402, F401
     bicicleta_model,
     espacio_model,
     ingreso_model,
+    reserva_model,
     rol_model,
     salida_model,
     usuario_model,
