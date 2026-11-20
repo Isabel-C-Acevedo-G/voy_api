@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.dependencies.database_dependency import get_db
+from app.schemas.auditoria_schema import UsuarioAdminUpdate
 from app.schemas.usuario_schema import EstadoUsuario, UsuarioCreate, UsuarioResponse, UsuarioUpdate
 from app.services import usuario_service
 
@@ -40,3 +41,17 @@ def actualizar_usuario(
     db: Session = Depends(get_db),
 ):
     return usuario_service.update_usuario(db, idUsuario, data)
+
+
+@router.patch(
+    "/{idUsuario}/gestion",
+    response_model=UsuarioResponse,
+    response_model_by_alias=True,
+)
+def gestionar_usuario_admin(
+    idUsuario: int,
+    data: UsuarioAdminUpdate,
+    db: Session = Depends(get_db),
+):
+    """RF-009: cambio de estado/rol con motivo (auditoría). Auth admin en Fase 7."""
+    return usuario_service.admin_cambiar_usuario(db, idUsuario, data)
