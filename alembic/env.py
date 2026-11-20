@@ -15,6 +15,7 @@ from app.models import (  # noqa: E402, F401
     espacio_model,
     ingreso_model,
     rol_model,
+    salida_model,
     usuario_model,
 )
 
