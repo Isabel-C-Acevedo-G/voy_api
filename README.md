@@ -2,6 +2,8 @@
 
 API REST del sistema **VOY** — gestión de parqueaderos de bicicletas (Medellín).
 
+Stack: **FastAPI** · **Pydantic v2** · **SQLAlchemy** · **Alembic** · **JWT (OAuth2)** · **bcrypt**.
+
 ## Requisitos
 
 - Python 3.14+
@@ -11,6 +13,7 @@ API REST del sistema **VOY** — gestión de parqueaderos de bicicletas (Medell�
 
 ```bash
 uv sync
+copy .env.example .env   # Windows; ajusta SECRET_KEY
 uv run alembic upgrade head
 ```
 
@@ -20,15 +23,65 @@ uv run alembic upgrade head
 uv run uvicorn app.main:app --reload
 ```
 
-Documentación interactiva: http://127.0.0.1:8000/docs
+- API: http://127.0.0.1:8000  
+- Swagger: http://127.0.0.1:8000/docs  
 
-## Reglas de negocio relevantes
+Al arrancar se crean (si no existen) los roles: `ciclista`, `vigilante`, `administrador`.
 
-### RN-009 — Historial permanente
+## Autenticación
 
-Los **ingresos** y las **salidas** no se editan ni se eliminan. No existen `PUT`/`DELETE` sobre `/ingresos` ni `/salidas`. Las aclaraciones se harán con notas (fase posterior).
+| Método | Path | Notas |
+|--------|------|--------|
+| `POST` | `/auth/register` | Alta con `clave` (se guarda solo el hash). Rol por defecto: `ciclista`. |
+| `POST` | `/auth/login` | Form OAuth2: `username` = correo o documento, `password` = clave. JWT **30 min**. |
+| `GET` | `/auth/me` | Usuario del token (`Authorization: Bearer …`). |
 
-### Ingreso / salida
+**No existe** `POST /usuarios` para alta: usar siempre `/auth/register`.
 
-- `POST /ingresos` asigna automáticamente un espacio `libre` (RN-004) y lo marca `ocupado`.
-- `POST /salidas` (o `PATCH /ingresos/{idIngreso}/salida`) exige las tres verificaciones en `true` (RN-007), cierra el ingreso y libera el espacio.
+### Roles
+
+| Rol | Uso típico |
+|-----|------------|
+| `ciclista` | Registro, bicicletas propias, reservas |
+| `vigilante` | Ingresos, salidas, incidentes |
+| `administrador` | Usuarios, espacios, notas, reportes, desactivar bicicletas |
+
+## Endpoints principales
+
+| Recurso | Paths |
+|---------|--------|
+| Roles | `GET/POST /roles` |
+| Usuarios | `GET/PATCH /usuarios`, `PATCH /usuarios/{id}/gestion` |
+| Espacios | `GET/POST/PATCH /espacios` |
+| Bicicletas | `GET/POST/PATCH /bicicletas`, `PATCH …/estado` |
+| Ingresos | `GET/POST /ingresos`, `PATCH /ingresos/{id}/salida` |
+| Salidas | `GET/POST /salidas` |
+| Reservas | `GET/POST /reservas`, `PATCH …/cancelar` |
+| Incidentes | `GET/POST/PATCH /incidentes` |
+| Notas | `GET/POST /notas` |
+| Reportes | `GET /reportes?tipo=&fechaDesde=&fechaHasta=&formato=` |
+
+JSON en **camelCase** (`idUsuario`, `numeroSerie`, …).
+
+## Reglas de negocio (resumen)
+
+- **RN-001** `numeroSerie` único  
+- **RN-004** el sistema asigna espacio libre en el ingreso  
+- **RN-005** reserva expira a los 30 minutos  
+- **RN-006** ingreso con `idReserva` marca la reserva como `usada`  
+- **RN-007** salida exige tres verificaciones en `true`  
+- **RN-008** solo admin desactiva bicicletas / gestiona estado-rol  
+- **RN-009** ingresos y salidas no se editan ni borran; solo notas  
+
+## Variables de entorno (`.env`)
+
+```env
+DATABASE_URL=sqlite:///./voy.db
+SECRET_KEY=cambia-esta-clave-en-produccion
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+## Git / versiones
+
+Trabajo en `develop`; entrega en `main` con tag **`v1.0.0`**. Tags intermedios `v0.1` … `v6.4` siguen el plan de implementación por fases.

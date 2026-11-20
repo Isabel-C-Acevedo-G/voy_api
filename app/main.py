@@ -69,9 +69,10 @@ app.include_router(reporte_routes.router)
 
 
 @app.on_event("startup")
-def seed_roles_basicos() -> None:
-    """Garantiza roles base para poder registrar/login."""
+def seed_datos_basicos() -> None:
+    """Roles base + espacios de ejemplo si la BD está vacía."""
     from app.database.connection import SessionLocal
+    from app.models.espacio_model import Espacio
     from app.models.rol_model import Rol
 
     db = SessionLocal()
@@ -79,6 +80,9 @@ def seed_roles_basicos() -> None:
         for nombre in ("ciclista", "vigilante", "administrador"):
             if db.query(Rol).filter(Rol.nombre == nombre).first() is None:
                 db.add(Rol(nombre=nombre))
+        if db.query(Espacio).count() == 0:
+            for codigo in ("A-01", "A-02", "A-03", "B-01", "B-02"):
+                db.add(Espacio(codigo=codigo, estado="libre", activo=True))
         db.commit()
     finally:
         db.close()
