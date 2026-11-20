@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.database_dependency import get_db
 from app.schemas.ingreso_schema import EstadoIngreso, IngresoCreate, IngresoResponse
-from app.services import ingreso_service
+from app.schemas.salida_schema import SalidaCreate, SalidaResponse
+from app.services import ingreso_service, salida_service
 
 router = APIRouter(prefix="/ingresos", tags=["ingresos"])
 
@@ -37,3 +38,20 @@ def obtener_ingreso(idIngreso: int, db: Session = Depends(get_db)):
 )
 def crear_ingreso(data: IngresoCreate, db: Session = Depends(get_db)):
     return ingreso_service.create_ingreso(db, data)
+
+
+@router.patch(
+    "/{idIngreso}/salida",
+    response_model=SalidaResponse,
+    response_model_by_alias=True,
+    status_code=status.HTTP_201_CREATED,
+)
+def registrar_salida_desde_ingreso(
+    idIngreso: int,
+    data: SalidaCreate,
+    db: Session = Depends(get_db),
+):
+    """Alias estilo guía (`PATCH /loans/{id}/return`). Usa el idIngreso de la URL."""
+    payload = data.model_dump()
+    payload["id_ingreso"] = idIngreso
+    return salida_service.create_salida(db, SalidaCreate.model_validate(payload))
