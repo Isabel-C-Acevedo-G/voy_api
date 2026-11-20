@@ -2,7 +2,9 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.dependencies.auth_dependency import get_current_active_user, require_admin
 from app.dependencies.database_dependency import get_db
+from app.models.usuario_model import Usuario
 from app.schemas.rol_schema import RolCreate, RolResponse
 from app.services import rol_service
 
@@ -10,7 +12,10 @@ router = APIRouter(prefix="/roles", tags=["roles"])
 
 
 @router.get("", response_model=list[RolResponse], response_model_by_alias=True)
-def listar_roles(db: Session = Depends(get_db)):
+def listar_roles(
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_active_user),
+):
     return rol_service.list_roles(db)
 
 
@@ -20,5 +25,9 @@ def listar_roles(db: Session = Depends(get_db)):
     response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
 )
-def crear_rol(data: RolCreate, db: Session = Depends(get_db)):
+def crear_rol(
+    data: RolCreate,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_admin),
+):
     return rol_service.create_rol(db, data)

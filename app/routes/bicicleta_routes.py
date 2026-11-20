@@ -2,7 +2,9 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.dependencies.auth_dependency import get_current_active_user, require_admin
 from app.dependencies.database_dependency import get_db
+from app.models.usuario_model import Usuario
 from app.schemas.bicicleta_schema import (
     BicicletaCreate,
     BicicletaEstadoUpdate,
@@ -21,6 +23,7 @@ def listar_bicicletas(
     estado: EstadoBicicleta | None = None,
     numeroSerie: str | None = None,
     db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_active_user),
 ):
     return bicicleta_service.list_bicicletas(
         db,
@@ -31,7 +34,11 @@ def listar_bicicletas(
 
 
 @router.get("/{idBicicleta}", response_model=BicicletaResponse, response_model_by_alias=True)
-def obtener_bicicleta(idBicicleta: int, db: Session = Depends(get_db)):
+def obtener_bicicleta(
+    idBicicleta: int,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_active_user),
+):
     return bicicleta_service.get_bicicleta_or_404(db, idBicicleta)
 
 
@@ -41,7 +48,12 @@ def obtener_bicicleta(idBicicleta: int, db: Session = Depends(get_db)):
     response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
 )
-def crear_bicicleta(data: BicicletaCreate, db: Session = Depends(get_db)):
+def crear_bicicleta(
+    data: BicicletaCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_active_user),
+):
+    data = data.model_copy(update={"id_propietario": current_user.id_usuario})
     return bicicleta_service.create_bicicleta(db, data)
 
 
@@ -50,6 +62,7 @@ def actualizar_bicicleta(
     idBicicleta: int,
     data: BicicletaUpdate,
     db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_active_user),
 ):
     return bicicleta_service.update_bicicleta(db, idBicicleta, data)
 
@@ -63,6 +76,6 @@ def cambiar_estado_bicicleta(
     idBicicleta: int,
     data: BicicletaEstadoUpdate,
     db: Session = Depends(get_db),
+    _: Usuario = Depends(require_admin),
 ):
-    """Activar/desactivar (RN-008). Auth admin se aplica en Fase 7."""
     return bicicleta_service.update_estado_bicicleta(db, idBicicleta, data)
