@@ -1,4 +1,4 @@
-"""Modelo ORM de usuarios (Campos_Transacciones_voy — sin claveHash hasta Fase 7)."""
+"""Modelo ORM de usuarios (Campos_Transacciones_voy)."""
 from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
@@ -20,6 +20,7 @@ class Usuario(Base):
     documento: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     correo: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
     telefono: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    clave_hash: Mapped[str] = mapped_column(String(255), nullable=False, default="", server_default="")
     id_rol: Mapped[int] = mapped_column(ForeignKey("roles.id_rol"), nullable=False, index=True)
     estado: Mapped[str] = mapped_column(String(20), nullable=False, default="activo")
     acepta_tratamiento_datos: Mapped[bool] = mapped_column(Boolean, nullable=False)
@@ -28,3 +29,4 @@ class Usuario(Base):
     creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     rol = relationship("Rol", back_populates="usuarios")
+
