@@ -6,8 +6,8 @@ from app.dependencies.auth_dependency import get_current_active_user, require_ad
 from app.dependencies.database_dependency import get_db
 from app.models.usuario_model import Usuario
 from app.schemas.auditoria_schema import UsuarioAdminUpdate
-from app.schemas.usuario_schema import EstadoUsuario, UsuarioCreate, UsuarioResponse, UsuarioUpdate
-from app.services import rol_service, usuario_service
+from app.schemas.usuario_schema import EstadoUsuario, UsuarioResponse, UsuarioUpdate
+from app.services import rol_service, usuario_service  # create_usuario queda solo para uso interno/legacy
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
@@ -38,16 +38,7 @@ def obtener_usuario(
     return usuario_service.get_usuario_or_404(db, idUsuario)
 
 
-@router.post(
-    "",
-    response_model=UsuarioResponse,
-    response_model_by_alias=True,
-    status_code=status.HTTP_201_CREATED,
-    deprecated=True,
-)
-def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
-    """Preferir POST /auth/register."""
-    return usuario_service.create_usuario(db, data)
+# Alta de usuarios: usar POST /auth/register (hashea clave). No hay POST /usuarios.
 
 
 @router.patch("/{idUsuario}", response_model=UsuarioResponse, response_model_by_alias=True)
