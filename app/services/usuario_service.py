@@ -4,7 +4,9 @@ from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.models.auditoria_usuario_model import AuditoriaUsuario
 from app.models.usuario_model import Usuario
+from app.schemas.auditoria_schema import UsuarioAdminUpdate
 from app.schemas.usuario_schema import EstadoUsuario, UsuarioCreate, UsuarioUpdate
 from app.services import rol_service
 
@@ -91,3 +93,43 @@ def update_usuario(db: Session, id_usuario: int, data: UsuarioUpdate) -> Usuario
     db.commit()
     db.refresh(usuario)
     return usuario
+
+
+def admin_cambiar_usuario(db: Session, id_usuario: int, data: UsuarioAdminUpdate) -> Usuario:
+    """RF-009 / RN-008: cambio de estado o rol con motivo en auditoría."""
+    if data.nuevo_estado is None and data.nuevo_rol is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Debe indicar nuevoEstado y/o nuevoRol",
+        )
+
+    usuario = get_usuario_or_404(db, id_usuario)
+    get_usuario_or_404(db, data.id_administrador)
+
+    if data.nuevo_rol is not None and rol_service.get_rol(db, data.nuevo_rol) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="nuevoRol no existe en la colección roles",
+        )
+
+    ahora = datetime.now(timezone.utc)
+    nuevo_estado_val = data.nuevo_estado.value if data.nuevo_estado else None
+    if data.nuevo_estado is not None:
+        usuario.estado = data.nuevo_estado.value
+    if data.nuevo_rol is not None:
+        usuario.id_rol = data.nuevo_rol
+    usuario.actualizado_en = ahora
+
+    auditoria = AuditoriaUsuario(
+        id_usuario=id_usuario,
+        nuevo_estado=nuevo_estado_val,
+        nuevo_rol=data.nuevo_rol,
+        id_administrador=data.id_administrador,
+        fecha_cambio=ahora,
+        motivo=data.motivo,
+    )
+    db.add(auditoria)
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
