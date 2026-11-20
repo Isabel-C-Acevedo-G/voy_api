@@ -7,7 +7,7 @@ from app.dependencies.database_dependency import get_db
 from app.models.usuario_model import Usuario
 from app.schemas.auditoria_schema import UsuarioAdminUpdate
 from app.schemas.usuario_schema import EstadoUsuario, UsuarioResponse, UsuarioUpdate
-from app.services import rol_service, usuario_service  # create_usuario queda solo para uso interno/legacy
+from app.services import rol_service, usuario_service
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
