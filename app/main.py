@@ -18,7 +18,7 @@ from app.routes import (
 app = FastAPI(
     title="VOY API",
     description="API REST para la gestión de parqueaderos de bicicletas (Medellín).",
-    version="3.0.0",
+    version="3.1.0",
 )
 
 app.include_router(rol_routes.router)
