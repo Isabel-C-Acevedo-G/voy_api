@@ -63,16 +63,6 @@ Al arrancar se crean (si no existen) los roles: `ciclista`, `vigilante`, `admini
 
 JSON en **camelCase** (`idUsuario`, `numeroSerie`, …).
 
-## Reglas de negocio (resumen)
-
-- **RN-001** `numeroSerie` único  
-- **RN-004** el sistema asigna espacio libre en el ingreso  
-- **RN-005** reserva expira a los 30 minutos  
-- **RN-006** ingreso con `idReserva` marca la reserva como `usada`  
-- **RN-007** salida exige tres verificaciones en `true`  
-- **RN-008** solo admin desactiva bicicletas / gestiona estado-rol  
-- **RN-009** ingresos y salidas no se editan ni borran; solo notas  
-
 ## Variables de entorno (`.env`)
 
 ```env
