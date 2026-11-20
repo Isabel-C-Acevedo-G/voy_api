@@ -11,9 +11,12 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from app.database.connection import DATABASE_URL, Base  # noqa: E402
 from app.models import (  # noqa: E402, F401
+    auditoria_usuario_model,
     bicicleta_model,
     espacio_model,
+    incidente_model,
     ingreso_model,
+    nota_model,
     reserva_model,
     rol_model,
     salida_model,
