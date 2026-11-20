@@ -68,6 +68,22 @@ app.include_router(nota_routes.router)
 app.include_router(reporte_routes.router)
 
 
+@app.on_event("startup")
+def seed_roles_basicos() -> None:
+    """Garantiza roles base para poder registrar/login."""
+    from app.database.connection import SessionLocal
+    from app.models.rol_model import Rol
+
+    db = SessionLocal()
+    try:
+        for nombre in ("ciclista", "vigilante", "administrador"):
+            if db.query(Rol).filter(Rol.nombre == nombre).first() is None:
+                db.add(Rol(nombre=nombre))
+        db.commit()
+    finally:
+        db.close()
+
+
 @app.get("/")
 @limiter.limit("60/minute")
 def read_root(request: Request):
